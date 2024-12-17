@@ -32,7 +32,7 @@ app_dash_mujeres = dash.Dash(
     server=server,
     routes_pathname_prefix="/mujeres_stem/"
 )
-df_mujeres = pd.read_csv("data/Mujeres STEM Bolivia ofi.csv")
+df_mujeres = pd.read_csv("data/Mujeres STEM Bolivia  ofi(1).csv")
 fig_mujeres = px.scatter_mapbox(
     df_mujeres,
     lat="Latitud",
