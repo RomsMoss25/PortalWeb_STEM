@@ -32,13 +32,16 @@ app_dash_mujeres = dash.Dash(
     server=server,
     routes_pathname_prefix="/mujeres_stem/"
 )
+# Cargar el CSV y limpiar columnas
 df_mujeres = pd.read_csv("data/Mujeres STEM Bolivia  ofi(1).csv")
+df_mujeres.columns = df_mujeres.columns.str.strip()  # Eliminar espacios en los nombres de columnas
+
 fig_mujeres = px.scatter_mapbox(
     df_mujeres,
     lat="Latitud",
     lon="Longitud",
     color="Campo STEM",
-    hover_name="Nombre",
+    hover_name="Nombre",  # Ahora sí funcionará
     zoom=5
 )
 fig_mujeres.update_layout(mapbox_style="carto-positron")
@@ -57,7 +60,9 @@ app_dash_papers = dash.Dash(
     server=server,
     routes_pathname_prefix="/papers_stem/"
 )
+# Cargar el CSV y limpiar columnas
 df_papers = pd.read_csv("data/Papers_proyectos STEM  (1).csv")
+df_papers.columns = df_papers.columns.str.strip()  # Eliminar espacios en los nombres de columnas
 df_papers = df_papers.dropna(subset=["TÍTULO", "CATEGORÍA"])
 
 app_dash_papers.layout = html.Div([
@@ -69,6 +74,7 @@ app_dash_papers.layout = html.Div([
     ]),
     dcc.Link("Volver al Inicio", href="/inicio/")
 ])
+
 
 # ---------------------------- #
 # Rutas Flask para Redirección #
