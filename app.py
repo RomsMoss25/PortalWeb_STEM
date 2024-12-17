@@ -1,50 +1,84 @@
-from flask import Flask, render_template
+from flask import Flask
+import dash
+from dash import html, dcc
 import pandas as pd
 import plotly.express as px
-import os
 
-# Crear la instancia de Flask
-app = Flask(__name__, template_folder="templates", static_folder="static")
+# Crear la aplicación Flask principal
+server = Flask(__name__)
 
-# Rutas de datos
-DATA_MUJERES_STEM = "data/Mujeres STEM Bolivia ofi.csv"
-DATA_PAPERS_STEM = "data/Papers_proyectos STEM.csv"
+# ----------------------------- #
+# Dash App 1 - Página Principal #
+# ----------------------------- #
+app_dash_inicio = dash.Dash(
+    __name__,
+    server=server,
+    routes_pathname_prefix="/inicio/"
+)
+app_dash_inicio.layout = html.Div([
+    html.H1("Bienvenido al Portal Mujeres STEM Bolivia"),
+    html.P("Explora nuestras secciones dedicadas a mujeres en STEM."),
+    html.Div([
+        dcc.Link("Mapa Interactivo de Mujeres STEM", href="/mujeres_stem/", style={'display': 'block'}),
+        dcc.Link("Papers y Proyectos STEM", href="/papers_stem/", style={'display': 'block'})
+    ])
+])
 
-# Ruta principal
-@app.route("/")
-def home():
-    return render_template("inicio.html")  # Página de inicio con botones
+# ------------------------------ #
+# Dash App 2 - Mapa Mujeres STEM #
+# ------------------------------ #
+app_dash_mujeres = dash.Dash(
+    __name__,
+    server=server,
+    routes_pathname_prefix="/mujeres_stem/"
+)
+df_mujeres = pd.read_csv("data/Mujeres STEM Bolivia ofi.csv")
+fig_mujeres = px.scatter_mapbox(
+    df_mujeres,
+    lat="Latitud",
+    lon="Longitud",
+    color="Campo STEM",
+    hover_name="Nombre",
+    zoom=5
+)
+fig_mujeres.update_layout(mapbox_style="carto-positron")
 
-# Página Mujeres STEM
-@app.route("/mujeres_stem")
-def mujeres_stem():
-    df = pd.read_csv(DATA_MUJERES_STEM)
-    fig = px.scatter_mapbox(
-        df,
-        lat="Latitud",
-        lon="Longitud",
-        color_discrete_sequence=px.colors.qualitative.Prism,
-        hover_data={"Nombre": True, "Campo STEM": True, "Institución": True},
-        zoom=5,
-    )
-    fig.update_layout(mapbox_style="carto-positron", margin={"r": 0, "t": 0, "l": 0, "b": 0})
-    plot_html = fig.to_html(full_html=False)
-    return render_template("mujeres_stem.html", plot_html=plot_html)
+app_dash_mujeres.layout = html.Div([
+    html.H1("Mapa Interactivo de Mujeres STEM"),
+    dcc.Graph(figure=fig_mujeres),
+    dcc.Link("Volver al Inicio", href="/inicio/")
+])
 
-# Página Papers STEM
-@app.route("/papers_stem")
-def papers_stem():
-    df = pd.read_csv(DATA_PAPERS_STEM)
-    df_clean = df.dropna(subset=["TÍTULO", "CATEGORÍA"])
-    return render_template(
-        "papers_stem.html",
-        tables=df_clean.to_html(classes="table table-striped", index=False),
-        titles=df_clean.columns.values,
-    )
+# ----------------------------- #
+# Dash App 3 - Papers STEM      #
+# ----------------------------- #
+app_dash_papers = dash.Dash(
+    __name__,
+    server=server,
+    routes_pathname_prefix="/papers_stem/"
+)
+df_papers = pd.read_csv("data/Papers_proyectos STEM.csv")
+df_papers = df_papers.dropna(subset=["TÍTULO", "CATEGORÍA"])
 
-# Instancia Flask para gunicorn
-server = app
+app_dash_papers.layout = html.Div([
+    html.H1("Papers y Proyectos STEM"),
+    html.Table([
+        html.Tr([html.Th(col) for col in df_papers.columns]),
+        *[html.Tr([html.Td(df_papers.iloc[i][col]) for col in df_papers.columns])
+          for i in range(len(df_papers))]
+    ]),
+    dcc.Link("Volver al Inicio", href="/inicio/")
+])
 
-# Servidor Flask principal
+# ---------------------------- #
+# Rutas Flask para Redirección #
+# ---------------------------- #
+@server.route("/")
+def redirect_inicio():
+    return """<meta http-equiv="refresh" content="0; URL='/inicio/'" />"""
+
+# ---------------------------- #
+# Iniciar Servidor Flask       #
+# ---------------------------- #
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    server.run(debug=True, port=5000)
