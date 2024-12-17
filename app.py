@@ -3,7 +3,8 @@ import pandas as pd
 import plotly.express as px
 import os
 
-app = Flask(__name__)
+# Crear la instancia de Flask
+app = Flask(__name__, template_folder="templates", static_folder="static")
 
 # Rutas de datos
 DATA_MUJERES_STEM = "data/Mujeres STEM Bolivia ofi.csv"
@@ -12,7 +13,7 @@ DATA_PAPERS_STEM = "data/Papers_proyectos STEM.csv"
 # Ruta principal
 @app.route("/")
 def home():
-    return render_template("index.html")
+    return render_template("inicio.html")  # Página de inicio con botones
 
 # Página Mujeres STEM
 @app.route("/mujeres_stem")
@@ -35,14 +36,14 @@ def mujeres_stem():
 def papers_stem():
     df = pd.read_csv(DATA_PAPERS_STEM)
     df_clean = df.dropna(subset=["TÍTULO", "CATEGORÍA"])
-    return render_template("papers_stem.html", tables=df_clean.to_html(classes='table table-striped'), titles=df_clean.columns.values)
+    return render_template(
+        "papers_stem.html",
+        tables=df_clean.to_html(classes="table table-striped", index=False),
+        titles=df_clean.columns.values,
+    )
 
-# Página de Inicio con botones de acceso
-@app.route("/inicio")
-def inicio():
-    return render_template("inicio.html")
-
-server = app.server
+# Instancia Flask para gunicorn
+server = app
 
 # Servidor Flask principal
 if __name__ == "__main__":
