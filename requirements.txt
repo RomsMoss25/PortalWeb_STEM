@@ -1,6 +1,6 @@
-
 dash
+flask
+gunicorn
+dash-bootstrap-components
 pandas
 plotly
-dash-bootstrap-components
-gunicorn
