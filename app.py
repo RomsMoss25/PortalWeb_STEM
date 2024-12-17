@@ -42,6 +42,8 @@ def papers_stem():
 def inicio():
     return render_template("inicio.html")
 
+server = app.server
+
 # Servidor Flask principal
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
