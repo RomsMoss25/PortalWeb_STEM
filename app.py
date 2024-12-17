@@ -57,7 +57,7 @@ app_dash_papers = dash.Dash(
     server=server,
     routes_pathname_prefix="/papers_stem/"
 )
-df_papers = pd.read_csv("data/Papers_proyectos STEM.csv")
+df_papers = pd.read_csv("data/Papers_proyectos STEM  (1).csv")
 df_papers = df_papers.dropna(subset=["TÍTULO", "CATEGORÍA"])
 
 app_dash_papers.layout = html.Div([
